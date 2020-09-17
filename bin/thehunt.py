@@ -46,7 +46,7 @@ class TheHunt:
         if 0 < new_pos[0] and self.axis[0] > new_pos[0]:
             if 0 < new_pos[1] and self.axis[1] > new_pos[1]:
                 return new_pos
-        return False
+        return None
 
     def decisionAi(self):
         new_pos = None
@@ -63,8 +63,22 @@ class TheHunt:
         return
 
     def decisionUsr(self, window):
+        valid_moves = ['w', 'a', 's', 'd', ' ']
         window.addstr(1, 1, "Which direction (w, a, s, d): ")
-        decision = window.getkey(1,32)
+        while True:
+            decision = window.getkey(1,32)
+            if decision in valid_moves:
+                new_pos = self.checkBoundry('usr', decision)
+                if new_pos:
+                    self.pos['usr'] = new_pos
+                    self.appendHistory('usr', decision)
+                    break
+            elif 'q' == decision:
+                self.quit = True
+                return
+            elif 'f' == decision and self.gun_enable:
+                self.fire()
+                break
         return
 
     def distance(self, ai_pos=None, usr_pos=None):
@@ -73,6 +87,9 @@ class TheHunt:
         a = math.pow(ai_pos[0] - usr_pos[0], 2)
         b = math.pow(ai_pos[1] - usr_pos[1], 2)
         return math.sqrt(a + b)
+
+    def fire(self):
+        return
 
     def placePlayers(self):
         while self.distance() < (self.axis[0] / 3):

@@ -9,6 +9,21 @@ from time import sleep
 random.seed()
 LEVELSFILE = 'data/levels.json'
 
+WELCOME_SCRIPT = [ \
+    "__________________Welcome to the Hunt!_____________________",
+    "Your objective is to hunt and kill the pesky rabbit!       ",
+    "Track the rabbit down and try to catch it. If you think you",
+    "have a shot, take it! However, be careful has you have     ",
+    "limited ammo to use against the rabbit. Like any good      ",
+    "hunter, you'll need to sit, wait, and listen for the rabit.",
+    "Good Luck!                                                 ",
+    "CONTROLS:  w, a, s, d: to move around the woods            ",
+    "           f: to fire your gun (if enabled)                ",
+    "           <space>: to listen to the rabbit's footsteps    ",
+    "                                                           ",
+    "What difficulty would you like to play?                    ",
+    "Levels 1-3:                                                ",
+    ]
 
 class TheHunt:
     def __init__(self):
@@ -53,11 +68,15 @@ class TheHunt:
         choices = {'w':0, 'a':0, 's':0, 'd':0}
         old_dist = self.distance()
         new_dist = self.distance()
-        for decision in choices:
-            new_pos = self.checkBoundry('ai', decision)
-            if new_pos:
-                choices[decision] = self.distance(ai_pos=new_pos)
-        new_pos = self.checkBoundry('ai', max(choices, key=choices.get))
+        if self.distance() < self.axis[0] / 4:
+            for decision in choices:
+                new_pos = self.checkBoundry('ai', decision)
+                if new_pos:
+                    choices[decision] = self.distance(ai_pos=new_pos)
+            new_pos = self.checkBoundry('ai', max(choices, key=choices.get))
+        else:
+            while not new_pos:
+                new_pos = self.checkBoundry('ai', random.choice(list(choices)))
         self.pos['ai'] = new_pos
         self.appendHistory('ai', new_pos)
         return
@@ -93,57 +112,60 @@ class TheHunt:
 
     def placePlayers(self):
         while self.distance() < (self.axis[0] / 3):
-            self.pos['ai'] = [random.randint(0, self.axis[0]), random.randint(0, self.axis[1])]
-            self.pos['usr'] = [random.randint(0, self.axis[0]), random.randint(0, self.axis[1])]
+            self.pos['ai'] = [random.randint(0, self.axis[0] - 1),
+                              random.randint(0, self.axis[1] - 1)]
+            self.pos['usr'] = [random.randint(0, self.axis[0] - 1),
+                               random.randint(0, self.axis[1] - 1)]
         self.appendHistory('ai', ' ')
         self.appendHistory('usr', ' ')
         return
 
     def run(self):
-        usr_win = self.window.subwin(8, 50, 1, 1)
+        win_usr = self.window.subwin(8, 50, 1, 1)
+        win_usr.border()
+        victory = False
         while not self.quit:
             self.decisionAi()
-            self.decisionUsr(usr_win)
             self.window.addstr(20, 1, "{}".format(self.pos))
             self.window.refresh()
+            self.decisionUsr(win_usr)
+            if self.pos['ai'] == self.pos['usr']:
+                self.quit = True
+                victory = True
+        if victory:
+            win_vic = self.window.subwin(10, 40, 2, 4)
+            win_vic.erase()
+            win_vic.border()
+            self.victory(win_vic)
         return
 
     def start(self, winscr):
         curses.curs_set(2)
         self.window = winscr
         start_win = self.window.subwin(15, 63, 1, 1)
-        start_win.addstr(1, 2,  "__________________Welcome to the Hunt!_____________________")
-        start_win.addstr(2, 2,  "Your objective is to hunt and kill the pesky rabbit!       ")
-        start_win.addstr(3, 2,  "Track the rabbit down and try to catch it. If you think you")
-        start_win.addstr(4, 2,  "have a shot, take it! However, be careful has you have     ")
-        start_win.addstr(5, 2,  "limited ammo to use against the rabbit. Like any good      ")
-        start_win.addstr(6, 2,  "hunter, you'll need to sit, wait, and listen for the rabit.")
-        start_win.addstr(7, 2,  "Good Luck!                                                 ")
-        start_win.addstr(8, 2,  "CONTROLS:  w, a, s, d: to move around the woods            ")
-        start_win.addstr(9, 2,  "           f: to fire your gun (if enabled)                ")
-        start_win.addstr(10, 2, "           <space>: to listen to the rabbit's footsteps    ")
 
-        start_win.addstr(12, 2, "What difficulty would you like to play?                    ")
-        start_win.addstr(13, 2, "Levels 1-3:                                                ")
+        index = 1
+        for line in WELCOME_SCRIPT:
+            start_win.addstr(index, 2, line)
+            index += 1
         start_win.border()
 
         valid = ['1', '2', '3', 'q']
         while True:
             level = start_win.getkey(13, 14)
             if level in valid:
+                if level == 'q':
+                    return
                 break
             else:
                 start_win.addstr(13, 18, "Invalid option {:2}".format(level))
                 start_win.move(13, 14)
                 start_win.refresh()
 
-        if level == 'q':
-            return
-
         with open(LEVELSFILE) as lvls:
             settings = json.load(lvls)
             settings = settings['levels'][int(level) - 1]
-        
+
         self.axis = settings['axis']
         self.grid = settings['grid']
         self.gun_enable = settings['gun_enable']
@@ -158,3 +180,12 @@ class TheHunt:
         start_win.refresh()
         self.placePlayers()
         self.run()
+
+    def victory(self, window):
+        curses.curs_set(0)
+        window.addstr(4,10, "You caught the Rabbit!")
+        window.refresh()
+        sleep(1)
+        window.addstr(5,10, "Press any key to exit.")
+        window.getkey(4,2)
+        return

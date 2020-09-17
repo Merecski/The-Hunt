@@ -1,0 +1,36 @@
+{
+    "levels": [
+        {
+            "axis": [6, 6],
+            "grid": true,
+            "gun_enable": false,
+            "gun_ammo": 0,
+            "gun_prob": 0,
+            "gun_range": 0
+        },
+        {
+            "axis": [15, 15],
+            "grid": true,
+            "gun_enable": true,
+            "gun_ammo": 10,
+            "gun_prob": 90,
+            "gun_range": 2
+        },
+        {
+            "axis": [15, 15],
+            "grid": false,
+            "gun_enable": true,
+            "gun_ammo": 10,
+            "gun_prob": 85,
+            "gun_range": 6
+        },
+        {
+            "axis": [25, 25],
+            "grid": false,
+            "gun_enable": true,
+            "gun_ammo": 5,
+            "gun_prob": 75,
+            "gun_range": 8
+        }
+    ]
+}

@@ -45,9 +45,6 @@ class TheHunt:
             ' ':[ 0,  0]
         }
 
-    def action(self, player, direction):
-        return {'move':direction, 'loc':self.pos[player]}
-
     def appendHistory(self, player, move):
         self.hist[player].append({'move':move, 'loc':self.pos[player]})
         return

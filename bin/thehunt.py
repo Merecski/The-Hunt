@@ -127,7 +127,7 @@ class TheHunt:
 
         while not self.quit:
             if self.board_print:
-                self.board.print(self.pos, win_board)
+                self.board.printShortMap(self.pos, win_board)
             self.decisionAi()
             self.window.addstr(20, 1, "{}".format(self.pos))
             self.window.refresh()

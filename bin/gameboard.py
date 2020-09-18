@@ -1,7 +1,11 @@
+from time import sleep
+from copy import deepcopy
+from random import shuffle, choice
 
 class Board:
     def __init__(self, axis):
         self.axis = axis
+        self.board = self.generate()
         self.view_dist = 2
         self.gui = {
             None:'_|',
@@ -15,7 +19,16 @@ class Board:
         }
 
     def generate(self):
-        return
+        ground = [' ', ' ', ' ', ',','.','*','\'','`']
+        board = []
+        for _ in range(self.axis[0]):
+            tmp = []
+            for _ in range(self.axis[1]):
+                fmt = [choice(ground), ' ']
+                shuffle(fmt)
+                tmp.append(''.join(fmt))
+            board.append(tmp)
+        return board
 
     def print(self, positions, window):
         window.clear()
@@ -26,10 +39,16 @@ class Board:
             board.append([None] * self.axis[0])
         for player, pos in positions.items():
             board[pos[0]][pos[1]] = player
+
         for y in board:
             board_str.append(''.join(self.gui[x] for x in y))
 
+        board_str = []
+        board = self.board
+        for y in board:
+            board_str.append(''.join(x for x in y))
         index = 1
+
         for line in board_str:
             window.addstr(index, 2, line)
             index += 1

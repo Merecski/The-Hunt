@@ -92,7 +92,7 @@ class Board:
             board_str.append(''.join(self.gui[x] for x in y))
         index = 1
         for line in board_str:
-            window.addstr(index + 4, 8, line)
+            window.addstr(index, 2, line)
             index += 1
         window.refresh()
         return
@@ -119,7 +119,7 @@ class Board:
             board_str.append(' '.join(x for x in y))
         index = 1
         for line in board_str:
-            window.addstr(index + 4, 8, line)
+            window.addstr(index, line)
             index += 1
         window.refresh()
         return

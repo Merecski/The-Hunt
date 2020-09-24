@@ -1,6 +1,7 @@
 {
     "levels": [
         {
+            "ai_vision": 1,
             "axis": [6, 6],
             "board_print": true,
             "gun_enable": false,
@@ -9,14 +10,16 @@
             "gun_range": 0
         },
         {
+            "ai_vision": 2,
             "axis": [15, 15],
             "board_print": true,
             "gun_enable": true,
             "gun_ammo": 10,
             "gun_prob": 90,
-            "gun_range": 2
+            "gun_range": 4
         },
         {
+            "ai_vision": 4,
             "axis": [15, 15],
             "board_print": false,
             "gun_enable": true,
@@ -25,6 +28,7 @@
             "gun_range": 6
         },
         {
+            "ai_vision": 6,
             "axis": [25, 25],
             "board_print": false,
             "gun_enable": true,

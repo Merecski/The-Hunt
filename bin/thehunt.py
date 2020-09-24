@@ -45,7 +45,9 @@ class TheHunt:
             'a':[ 0, -1],
             's':[ 1,  0],
             'd':[ 0,  1],
-            ' ':[ 0,  0]
+            ' ':[ 0,  0],
+            'f':[ 0,  0],
+            'q':[ 0,  0]
         }
 
     def appendHistory(self, player, move):
@@ -83,23 +85,34 @@ class TheHunt:
 
     def decisionUsr(self, window):
         decision = None
+        window.clear()
+        window.border()
         valid_moves = ['w', 'a', 's', 'd', ' ', 'q', 'f']
-        window.addstr(1, 1, "Which direction (w, a, s, d): ")
-        while decision not in valid_moves:
-            decision = window.getkey(1,32)
-
-        if decision in valid_moves:
-            if 'q' == decision:
-                self.quit = True
-            elif 'f' == decision and self.gun_enable:
-                if 0 < self.gun_ammo:
-                    self.fire(window)
-                    self.gun_ammo -= self.gun_ammo
+        while True:
+            window.addstr(1, 2, "Which direction? ")
+            decision = window.getkey(1,20)
+            window.clear()
+            window.border()
+            if decision in valid_moves:
+                if self.checkBoundry('usr', decision):
+                    break
+                window.addstr(2, 4, 'Move is out of bounds!')
             else:
-                new_pos = self.checkBoundry('usr', decision)
-                if new_pos:
-                    self.pos['usr'] = new_pos
-                    self.appendHistory('usr', decision)
+                window.addstr(2, 4, 'Invalid decision: {}'.format(decision))
+
+        if 'q' == decision:
+            self.quit = True
+        elif 'f' == decision and self.gun_enable:
+            if 0 < self.gun_ammo:
+                self.fire(window)
+                self.gun_ammo -= 1
+            else:
+                window.addstr(2, 4, 'Out of ammo!')
+        else:
+            new_pos = self.checkBoundry('usr', decision)
+            if new_pos:
+                self.pos['usr'] = new_pos
+                self.appendHistory('usr', decision)
         return
 
     def distance(self, ai_pos=None, usr_pos=None):
@@ -110,36 +123,40 @@ class TheHunt:
         return math.sqrt(a + b)
 
     def fire(self, window):
-        valid_moves = ['w', 'a', 's', 'd']
+        valid = ['w', 'a', 's', 'd']
         bullet_sleep = 0.2
         decision = None
         miss = False
         self.pos['bullet'] = self.pos['usr']
         window.clear()
-        window.addstr(1, 1, 'Which direction to fire? (w, a, s, d): "'
+        window.border()
+        window.addstr(1, 2, 'Which direction to fire? ')
         while not decision:
-            decision = window.getkey(1,39)
-            if (decision not in valid_moves) or (self.checkBoundry('bullet', decision) == None):
+            decision = window.getkey(1,27)
+            if decision not in valid:
                  window.addstr(2, 4, "Invalid direction!")
                  decision = None
 
         for dist in range(self.gun_range):
-            window.addstr(3, 1, ('~~' * dist) + '~>')
+            window.addstr(3, (2 * dist) + 2, '~~>')
+            window.refresh()
             sleep(bullet_sleep)
-            self.pos['bullet'] = self.checkBoundry('bullet', decision)
+            self.pos['bullet'] = self.calculate('bullet', decision)
             if self.pos['bullet']:
-                if distance(usr_pos=self.pos['bullet'] == 0):
-                    window.addstr(3, 2 * dist, '~>HIT!')
+                if self.distance(usr_pos=self.pos['bullet']) == 0:
+                    window.addstr(3, (2 * dist) + 2, '~>HIT!')
                     self.quit = True
                     break
-                if self.bullet_prob < random.random() * 100:
-                    window.addstr(3, 1, ('~~' * dist) + '~\')
+                if self.gun_prob < random.random() * 100:
                     break
             else:
                 break
 
         if not self.quit:
+            window.addstr(3, (2 * dist) + 2, '~~\\_')
             window.addstr(2, 4, 'The bullet missed!')
+        window.refresh()
+        sleep(1)
         del self.pos['bullet']
         return
 

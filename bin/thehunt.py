@@ -23,7 +23,7 @@ WELCOME_SCRIPT = [ \
     "           <space>: to listen to the rabbit's footsteps    ",
     "                                                           ",
     "What difficulty would you like to play?                    ",
-    "Levels 1-3:                                                ",
+    "                                                           ",
     ]
 
 class TheHunt:
@@ -213,23 +213,24 @@ class TheHunt:
         for line in WELCOME_SCRIPT:
             start_win.addstr(index, 2, line)
             index += 1
+
+        with open(LEVELSFILE) as lvls:
+            settings = json.load(lvls)
+            num_settings = len(settings['levels'])
+        start_win.addstr(index - 1, 2, 'Levels (1-{}):'.format(num_settings))
         start_win.border()
 
         while True:
-            level = start_win.getkey(13, 14)
+            level = start_win.getkey(13, 16)
             if level == 'q':
                 return
-            try:
-                with open(LEVELSFILE) as lvls:
-                    settings = json.load(lvls)
-                    settings = settings['levels'][int(level) - 1]
-                break
-            except (IndexError, ValueError):
-                pass
+            elif level.isdigit():
+                if 0 < int(level) <= num_settings:
+                    break
             start_win.addstr(13, 18, "Invalid option {:2}".format(level))
-            start_win.move(13, 14)
-            start_win.refresh()
+            start_win.move(13, 16)
 
+        settings = settings['levels'][int(level) - 1]
         self.ai_vision = settings['ai_vision']
         self.axis = settings['axis']
         self.board_print = settings['board_print']
@@ -238,7 +239,7 @@ class TheHunt:
         self.gun_prob = settings['gun_prob']
         self.gun_range = settings['gun_range']
 
-        start_win.addstr(13, 14, "{} Let the Hunt begin!".format(level))
+        start_win.addstr(13, 16, "{} Let the Hunt begin!".format(level))
         start_win.refresh()
         sleep(1)
         start_win.erase()

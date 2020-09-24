@@ -28,6 +28,7 @@ WELCOME_SCRIPT = [ \
 
 class TheHunt:
     def __init__(self):
+        self.ai_vision = 0
         self.axis = [0, 0]
         self.board = None
         self.grid = False
@@ -67,15 +68,24 @@ class TheHunt:
 
     def decisionAi(self):
         new_pos = None
-        choices = {'w':0, 'a':0, 's':0, 'd':0}
+        choices = {'w':0.1, 'a':0.1, 's':0.1, 'd':0.1}
         old_dist = self.distance()
         new_dist = self.distance()
-        if self.distance() < self.axis[0] / 4:
+        if self.distance() < self.ai_vision:
             for decision in choices:
                 new_pos = self.checkBoundry('ai', decision)
                 if new_pos:
                     choices[decision] = self.distance(ai_pos=new_pos)
-            new_pos = self.checkBoundry('ai', max(choices, key=choices.get))
+            # Helps if mutliple keys have the save value
+            # Otherwise it becomes too predictable when cornered
+            choices_list = list(choices.items())
+            random.shuffle(choices_list)
+            choices = sorted(choices_list, key=lambda x: x[1], reverse=True)
+            if 0.25 < random.random():
+                # Random chance rabbit will go the second farthest decision
+                new_pos = self.calculate('ai', choices[0][0])
+            else:
+                new_pos = self.calculate('ai', choices[1][0])
         else:
             while not new_pos:
                 new_pos = self.checkBoundry('ai', random.choice(list(choices)))
@@ -171,10 +181,11 @@ class TheHunt:
         return
 
     def run(self):
-        win_usr = self.window.subwin(8, 40, 1, 1)
-        win_board = self.window.subwin(self.axis[0] + 2, (self.axis[1] + 2) * 2, 1, 60)
-        win_usr.border()
         victory = False
+        win_usr = self.window.subwin(8, 40, 1, 1)
+        win_usr.border()
+        if self.board_print:
+            win_board = self.window.subwin(self.axis[0] + 2, (self.axis[1] + 2) * 2, 1, 60)
 
         while not self.quit:
             if self.board_print:
@@ -204,22 +215,22 @@ class TheHunt:
             index += 1
         start_win.border()
 
-        valid = ['1', '2', '3', 'q']
         while True:
             level = start_win.getkey(13, 14)
-            if level in valid:
-                if level == 'q':
-                    return
+            if level == 'q':
+                return
+            try:
+                with open(LEVELSFILE) as lvls:
+                    settings = json.load(lvls)
+                    settings = settings['levels'][int(level) - 1]
                 break
-            else:
-                start_win.addstr(13, 18, "Invalid option {:2}".format(level))
-                start_win.move(13, 14)
-                start_win.refresh()
+            except (IndexError, ValueError):
+                pass
+            start_win.addstr(13, 18, "Invalid option {:2}".format(level))
+            start_win.move(13, 14)
+            start_win.refresh()
 
-        with open(LEVELSFILE) as lvls:
-            settings = json.load(lvls)
-            settings = settings['levels'][int(level) - 1]
-
+        self.ai_vision = settings['ai_vision']
         self.axis = settings['axis']
         self.board_print = settings['board_print']
         self.gun_enable = settings['gun_enable']

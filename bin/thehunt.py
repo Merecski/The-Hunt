@@ -32,8 +32,9 @@ class TheHunt:
         self.board = None
         self.grid = False
         self.gun_enable = False
-        self.gun_ammo = None
-        self.gun_prob = None
+        self.gun_ammo = 0
+        self.gun_prob = 0
+        self.gun_range = 0
         self.hist = {'ai':[], 'usr':[]}
         self.pos = {'ai':[0, 0], 'usr':[0, 0]}
         self.quit = False
@@ -81,22 +82,24 @@ class TheHunt:
         return
 
     def decisionUsr(self, window):
-        valid_moves = ['w', 'a', 's', 'd', ' ']
+        decision = None
+        valid_moves = ['w', 'a', 's', 'd', ' ', 'q', 'f']
         window.addstr(1, 1, "Which direction (w, a, s, d): ")
-        while True:
+        while decision not in valid_moves:
             decision = window.getkey(1,32)
-            if decision in valid_moves:
+
+        if decision in valid_moves:
+            if 'q' == decision:
+                self.quit = True
+            elif 'f' == decision and self.gun_enable:
+                if 0 < self.gun_ammo:
+                    self.fire(window)
+                    self.gun_ammo -= self.gun_ammo
+            else:
                 new_pos = self.checkBoundry('usr', decision)
                 if new_pos:
                     self.pos['usr'] = new_pos
                     self.appendHistory('usr', decision)
-                    break
-            elif 'q' == decision:
-                self.quit = True
-                return
-            elif 'f' == decision and self.gun_enable:
-                self.fire()
-                break
         return
 
     def distance(self, ai_pos=None, usr_pos=None):
@@ -106,7 +109,38 @@ class TheHunt:
         b = math.pow(ai_pos[1] - usr_pos[1], 2)
         return math.sqrt(a + b)
 
-    def fire(self):
+    def fire(self, window):
+        valid_moves = ['w', 'a', 's', 'd']
+        bullet_sleep = 0.2
+        decision = None
+        miss = False
+        self.pos['bullet'] = self.pos['usr']
+        window.clear()
+        window.addstr(1, 1, 'Which direction to fire? (w, a, s, d): "'
+        while not decision:
+            decision = window.getkey(1,39)
+            if (decision not in valid_moves) or (self.checkBoundry('bullet', decision) == None):
+                 window.addstr(2, 4, "Invalid direction!")
+                 decision = None
+
+        for dist in range(self.gun_range):
+            window.addstr(3, 1, ('~~' * dist) + '~>')
+            sleep(bullet_sleep)
+            self.pos['bullet'] = self.checkBoundry('bullet', decision)
+            if self.pos['bullet']:
+                if distance(usr_pos=self.pos['bullet'] == 0):
+                    window.addstr(3, 2 * dist, '~>HIT!')
+                    self.quit = True
+                    break
+                if self.bullet_prob < random.random() * 100:
+                    window.addstr(3, 1, ('~~' * dist) + '~\')
+                    break
+            else:
+                break
+
+        if not self.quit:
+            window.addstr(2, 4, 'The bullet missed!')
+        del self.pos['bullet']
         return
 
     def placePlayers(self):

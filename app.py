@@ -1,6 +1,8 @@
-#!/usr/bin/python3.6
-from bin.thehunt import TheHunt
+#!/usr/bin/python3
+
 import curses
+
+from bin.thehunt import TheHunt
 
 if __name__ == '__main__':
     hunt = TheHunt()

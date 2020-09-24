@@ -4,6 +4,7 @@ import curses
 import json
 import math
 import random
+from .gameboard import Board
 from time import sleep
 
 random.seed()
@@ -28,6 +29,7 @@ WELCOME_SCRIPT = [ \
 class TheHunt:
     def __init__(self):
         self.axis = [0, 0]
+        self.board = None
         self.grid = False
         self.gun_enable = False
         self.gun_ammo = None
@@ -55,8 +57,8 @@ class TheHunt:
 
     def checkBoundry(self, player, decision):
         new_pos = self.calculate(player, decision)
-        if 0 < new_pos[0] and self.axis[0] > new_pos[0]:
-            if 0 < new_pos[1] and self.axis[1] > new_pos[1]:
+        if 0 <= new_pos[0] and self.axis[0] > new_pos[0]:
+            if 0 <= new_pos[1] and self.axis[1] > new_pos[1]:
                 return new_pos
         return None
 
@@ -118,10 +120,14 @@ class TheHunt:
         return
 
     def run(self):
-        win_usr = self.window.subwin(8, 50, 1, 1)
+        win_usr = self.window.subwin(8, 40, 1, 1)
+        win_board = self.window.subwin(self.axis[0] + 2, (self.axis[1] + 2) * 2, 1, 60)
         win_usr.border()
         victory = False
+
         while not self.quit:
+            if self.board_print:
+                self.board.printGrid(self.pos, win_board)
             self.decisionAi()
             self.window.addstr(20, 1, "{}".format(self.pos))
             self.window.refresh()
@@ -164,7 +170,7 @@ class TheHunt:
             settings = settings['levels'][int(level) - 1]
 
         self.axis = settings['axis']
-        self.grid = settings['grid']
+        self.board_print = settings['board_print']
         self.gun_enable = settings['gun_enable']
         self.gun_ammo = settings['gun_ammo']
         self.gun_prob = settings['gun_prob']
@@ -175,6 +181,7 @@ class TheHunt:
         sleep(1)
         start_win.erase()
         start_win.refresh()
+        self.board = Board(self.axis)
         self.placePlayers()
         self.run()
 

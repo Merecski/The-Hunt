@@ -2,7 +2,7 @@
     "levels": [
         {
             "axis": [6, 6],
-            "grid": true,
+            "board_print": true,
             "gun_enable": false,
             "gun_ammo": 0,
             "gun_prob": 0,
@@ -10,7 +10,7 @@
         },
         {
             "axis": [15, 15],
-            "grid": true,
+            "board_print": true,
             "gun_enable": true,
             "gun_ammo": 10,
             "gun_prob": 90,
@@ -18,7 +18,7 @@
         },
         {
             "axis": [15, 15],
-            "grid": false,
+            "board_print": false,
             "gun_enable": true,
             "gun_ammo": 10,
             "gun_prob": 85,
@@ -26,7 +26,7 @@
         },
         {
             "axis": [25, 25],
-            "grid": false,
+            "board_print": false,
             "gun_enable": true,
             "gun_ammo": 5,
             "gun_prob": 75,

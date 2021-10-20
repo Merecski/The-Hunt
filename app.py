@@ -2,7 +2,7 @@
 
 import curses
 
-from bin.thehunt import TheHunt
+from src.thehunt import TheHunt
 
 if __name__ == '__main__':
     hunt = TheHunt()
